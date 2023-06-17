@@ -27,6 +27,7 @@ namespace Accountable.Models
         [Column(TypeName = "nvarchar(MAX)")]
         public string? AuthorizationToken { get; set; }
 
+        [NotMapped]
         public virtual User? User { get; set; }
     }
 }
