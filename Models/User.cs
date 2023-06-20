@@ -14,7 +14,6 @@ namespace Accountable.Models
         public string? ProfilePicture { get; set; }
         [Required]
         [Column(TypeName = "DateTime2")]
-
         public DateTime Registered { get; set; }
         [Required]
         [Column(TypeName = "int")]
@@ -23,10 +22,17 @@ namespace Accountable.Models
         [Column(TypeName = "int")]
         public int Height { get; set; } // in in.
         [Required]
-        [Column(TypeName = "nvarchar(1)")]
+        [Column(TypeName = "nvarchar(2)")]
         public char Gender { get; set; } // m/f/n, used for bmi calculator if want
         [Required]
+        [Column(TypeName = "int")]
+        public int NumFriends { get; set; }
+        [Required]
         [Column(TypeName = "blob")]
-        public byte[]? About { get; set; }
+        [MaxLength(250)]
+        public byte[]? About { get; set; } // small about section
+        [Required]
+        [Column(TypeName = "bool")]
+        public bool? PrivateProgress { get; set; } // users can make their progress private (only available to them)
     }
 }

@@ -10,7 +10,7 @@ namespace Accountable.Models
         public int Id { get; set; }
         [Required]
         [ForeignKey("User")]
-        public int UserID { get; set; }
+        public int UserId { get; set; }
         [Required]
         [Column(TypeName = "int")]
         public int Weight { get; set; } // lbs for american audience

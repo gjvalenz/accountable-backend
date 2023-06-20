@@ -3,18 +3,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Accountable.Models
 {
-    public class Friend
+    public class PostLike
     {
         [Key]
         public int Id { get; set; }
         [Required]
         [ForeignKey("User")]
-        public int UserId1 { get; set; }
+        public int UserId { get; set; }
         [Required]
-        [ForeignKey("User")]
-        public int UserId2 { get; set; }
-        [Required]
-        [Column(TypeName = "DateTime2")]
-        public DateTime FriendsSince { get; set; }
+        [ForeignKey("Post")]
+        public int PostId { get; set; }
     }
 }

@@ -33,13 +33,13 @@ namespace Accountable.Controllers
         public ActionResult<UserContext> GetSelf()
         {
             var ids = JWTHelper.FromUserClaims(User.Claims);
-            var user = _context.Users.Find(ids.UserID);
-            var userAccount = _context.UserAccounts.Find(ids.UserAccountID);
-            if (userAccount == null || user == null)
+            if (_context.IsAuthenticated(ids))
                 return Problem("Could not retreived user data.");
+            User user = _context.Users.Find(ids.UserID)!;
+            UserAccount userAccount = _context.UserAccounts.Find(ids.UserAccountID)!;
             return Ok(new UserContext
             {
-                Name = user.Name!,
+                Name = user.Name,
                 ProfilePicture = user.ProfilePicture!,
                 Registered = user.Registered,
                 Email = userAccount.Email!

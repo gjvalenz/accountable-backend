@@ -9,10 +9,10 @@ namespace Accountable.Models
         public int Id { get; set; }
         [Required]
         [ForeignKey("User")]
-        public int FromId { get; set; }
+        public int FromUserId { get; set; }
         [Required]
         [ForeignKey("User")]
-        public int ToId { get; set; }
+        public int ToUserId { get; set; }
         [Required]
         [Column(TypeName = "DateTime2")]
         public DateTime DateSent { get; set; }

@@ -18,6 +18,7 @@ namespace Accountable.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
+            //var u = from user in _context.Users where user.Gender == 'f' select user;
             return await _context.Users.ToListAsync();
         }
 
