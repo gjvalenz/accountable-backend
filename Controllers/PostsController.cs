@@ -19,6 +19,32 @@ namespace Accountable.Controllers
             _context = context;
         }
 
+
+        [Authorize]
+        [HttpGet("{postId}/like")]
+        public ActionResult<PostLiked> LikePost(int postId)
+        {
+            var ids = JWTHelper.FromUserClaims(User.Claims);
+            var userId = ids.UserID;
+            var first = _context.PostLikes.Where(p => p.UserId == userId && p.PostId == postId).FirstOrDefault();
+            if (first == null)
+            { // like post, create like
+                var like = new PostLike
+                {
+                    Id = 0,
+                    UserId = userId,
+                    PostId = postId,
+                };
+                _context.PostLikes.Add(like);
+                return Ok(new PostLiked { Liked = true });
+            }
+            else // unlike!
+            {
+                _context.PostLikes.Remove(first);
+                return Ok(new PostLiked { Liked = false });
+            }
+        }
+
         [Authorize]
         [HttpPost("post")]
         public ActionResult<PostInfo> Post(CreatePost post)
@@ -33,9 +59,9 @@ namespace Accountable.Controllers
                 Content = post.Content,
                 UserId = ids.UserID,
                 Likes = 0,
-                PostPhoto1 = len > 0 ? post.PhotoUrls[0] : null,
-                PostPhoto2 = len > 1 ? post.PhotoUrls[1] : null,
-                PostPhoto3 = len > 2 ? post.PhotoUrls[2] : null,
+                PostPhoto1 = len > 0 ? post.PhotoUrls![0] : null,
+                PostPhoto2 = len > 1 ? post.PhotoUrls![1] : null,
+                PostPhoto3 = len > 2 ? post.PhotoUrls![2] : null,
             };
             _context.Posts.Add(newPost);
             var postInfo = new PostInfo

@@ -1,4 +1,6 @@
-﻿namespace Accountable.DataStructures.ResponseRequestData
+﻿using Accountable.Models;
+
+namespace Accountable.DataStructures.ResponseRequestData
 {
     public class UserContext
     {
@@ -6,6 +8,26 @@
         public string? ProfilePicture { get; set; }
         public DateTime Registered { get; set; }
         public string? Email { get; set; }
+    }
+
+    public class UserView
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public string? ProfilePicture { get; set; }
+        public int NumFriends { get; set; }
+        public DateTime FriendRequestSent { get; set; }
+
+        public static UserView FromUser(User u)
+        {
+            return new UserView
+            {
+                Id = u.Id,
+                Name = u.Name,
+                ProfilePicture = u.ProfilePicture,
+                NumFriends = u.NumFriends
+            };
+        }
     }
 
     public class UserIDs
@@ -51,5 +73,15 @@
     {
         public byte[]? Content { get; set; }
         public string[]? PhotoUrls { get; set; }
+    }
+
+    public class PostLiked
+    {
+        public bool Liked { get; set; }
+    }
+
+    public class FriendRequestResult
+    {
+        public bool Friended { get; set; }
     }
 }
