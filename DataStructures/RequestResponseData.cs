@@ -46,4 +46,10 @@
         public DateTime CreatedAt { get; set; }
         public bool Liked { get; set; }
     }
+
+    public class CreatePost
+    {
+        public byte[]? Content { get; set; }
+        public string[]? PhotoUrls { get; set; }
+    }
 }

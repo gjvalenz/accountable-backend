@@ -23,10 +23,8 @@ namespace Accountable.Models
         public string? PostPhoto2 { get; set; }
         [Column(TypeName = "nvarchar(MAX)")]
         public string? PostPhoto3 { get; set; }
-
         [Required]
         [Column(TypeName = "DateTime2")]
-
         public DateTime CreatedAt { get; set; }
     }
 }

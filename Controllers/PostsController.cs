@@ -20,6 +20,40 @@ namespace Accountable.Controllers
         }
 
         [Authorize]
+        [HttpPost("post")]
+        public ActionResult<PostInfo> Post(CreatePost post)
+        {
+            var ids = JWTHelper.FromUserClaims(User.Claims);
+            var created = DateTime.Now;
+            var len = post.PhotoUrls!.Count();
+            var newPost = new Post
+            {
+                Id = 0,
+                CreatedAt = created,
+                Content = post.Content,
+                UserId = ids.UserID,
+                Likes = 0,
+                PostPhoto1 = len > 0 ? post.PhotoUrls[0] : null,
+                PostPhoto2 = len > 1 ? post.PhotoUrls[1] : null,
+                PostPhoto3 = len > 2 ? post.PhotoUrls[2] : null,
+            };
+            _context.Posts.Add(newPost);
+            var postInfo = new PostInfo
+            {
+                CreatedAt = created,
+                Content = post.Content,
+                Id = newPost.Id,
+                UserId = ids.UserID,
+                PostPhoto1 = newPost.PostPhoto1,
+                PostPhoto2 = newPost.PostPhoto2,
+                PostPhoto3 = newPost.PostPhoto3,
+                Likes = 0,
+                Liked = false
+            };
+            return Ok(postInfo);
+        }
+
+        [Authorize]
         [HttpGet("{date}")]
         public ActionResult<IEnumerable<PostInfo>> GetAll(string date)
         {
