@@ -18,6 +18,23 @@ namespace Accountable.Controllers
         }
 
         [Authorize]
+        [HttpGet("all")]
+        public ActionResult<IEnumerable<UserView>> GetAllFriends()
+        {
+            var ids = JWTHelper.FromUserClaims(User.Claims);
+            var userId = ids.UserID;
+            var friends = _context.Friends.Where(f => (f.UserId1 == userId || f.UserId2 == userId)).ToList();
+            return friends.Select(f =>
+            {
+                var correctId = (f.UserId2 == userId) ? f.UserId1 : f.UserId2;
+                var user = _context.Users.Find(correctId)!;
+                var uv = UserView.FromUser(user);
+                uv.FriendRequestSent = f.FriendsSince;
+                return uv;
+            }).ToList();
+        }
+
+        [Authorize]
         [HttpGet("remove/{otherId}")]
         public ActionResult<FriendRequestResult> RemoveFriend(int otherId)
         {
@@ -28,6 +45,9 @@ namespace Accountable.Controllers
             if (friend != null)
             {
                 _context.Friends.Remove(friend);
+                _context.Users.Find(userId)!.NumFriends -= 1;
+                _context.Users.Find(otherId)!.NumFriends -= 1;
+                _context.SaveChanges();
             }
             return Ok(new FriendRequestResult { Friended = false });
         }
@@ -48,10 +68,9 @@ namespace Accountable.Controllers
             {
                 _context.FriendRequests.Remove(frReceived);
             }
+            _context.SaveChanges();
             return Ok(new FriendRequestResult { Friended = false });
         }
-
-
 
         [Authorize]
         [HttpGet("requestsSent")]
@@ -101,27 +120,59 @@ namespace Accountable.Controllers
             if (frReceived != null)
             {
                 _context.FriendRequests.Remove(frReceived);
-                _context.Friends.Add(new Friend
+                Friend fri = new Friend
                 {
                     Id = 0,
                     UserId1 = ourId,
                     UserId2 = otherId,
                     FriendsSince = DateTime.Now
-                });
+                };
+                _context.Friends.Add(fri);
+                _context.SaveChanges();
+                Notification notif = new Notification
+                {
+                    Id = 0,
+                    Kind = Notification.Kinds[2],
+                    TimeSent = DateTime.Now,
+                    KeyTo = fri.Id,
+                    To = otherId,
+                    From = ourId,
+                    Read = false
+                };
+                _context.Notifications.Add(notif);
+                _context.SaveChanges();
+                _context.Users.Find(ourId)!.NumFriends += 1;
+                _context.Users.Find(otherId)!.NumFriends += 1;
+                _context.SaveChanges();
                 return Ok(new FriendRequestResult { Friended = true });
             }
             else
             {
                 if (frSent == null) // make new one
                 {
-                    _context.FriendRequests.Add(new FriendRequest
+                    FriendRequest fr = new FriendRequest
                     {
                         Id = 0,
                         FromUserId = ourId,
                         ToUserId = otherId,
                         DateSent = DateTime.Now
-                    });
+                    };
+                    _context.FriendRequests.Add(fr);
+                    _context.SaveChanges();
+                    Notification notif = new Notification
+                    {
+                        Id = 0,
+                        Kind = Notification.Kinds[3],
+                        TimeSent = DateTime.Now,
+                        KeyTo = fr.Id,
+                        To = otherId,
+                        From = ourId,
+                        Read = false
+                    };
+                    _context.Notifications.Add(notif);
+                    _context.SaveChanges();
                 }
+                //_context.SaveChanges();
                 return Ok(new FriendRequestResult { Friended = false });
             }
         }

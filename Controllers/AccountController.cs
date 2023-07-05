@@ -3,6 +3,8 @@ using Accountable.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Accountable.DataStructures.ResponseRequestData;
+using System.Text;
+
 
 namespace Accountable.Controllers
 {
@@ -14,12 +16,14 @@ namespace Accountable.Controllers
         private readonly DBContext _context;
         private readonly IConfiguration _config;
         private readonly string _secret;
+        private readonly IWebHostEnvironment _env;
 
-        public AccountController(DBContext context, IConfiguration config)
+        public AccountController(IWebHostEnvironment env, DBContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
             _secret = _config.GetSection("AppSettings:Secret").Value!;
+            _env = env;
         }
 
         [HttpGet("all")]
@@ -33,7 +37,7 @@ namespace Accountable.Controllers
         public ActionResult<UserContext> GetSelf()
         {
             var ids = JWTHelper.FromUserClaims(User.Claims);
-            if (_context.IsAuthenticated(ids))
+            if (!_context.IsAuthenticated(ids))
                 return Problem("Could not retreived user data.");
             User user = _context.Users.Find(ids.UserID)!;
             UserAccount userAccount = _context.UserAccounts.Find(ids.UserAccountID)!;
@@ -83,7 +87,7 @@ namespace Accountable.Controllers
         }
 
         [HttpPost("register")]
-        public ActionResult<TokenInfo> Register(RegisterInfo Register)
+        public ActionResult<TokenInfo> Register([FromForm] RegisterInfo Register)
         {
             var result = _context.UserAccounts.FirstOrDefault(ua => ua.Email!.Equals(Register.Email));
             if (result != null)
@@ -94,7 +98,13 @@ namespace Accountable.Controllers
                 Id = 0,
                 Name = Register.Name,
                 ProfilePicture = "",
-                Registered = timeAdded
+                Registered = timeAdded,
+                Weight = Register.Weight,
+                Height = Register.Height,
+                About = Register.About != null ? Encoding.UTF8.GetBytes(Register.About) : null,
+                NumFriends = 0,
+                Gender = Register.Gender,
+                PrivateProgress = false
             };
             _context.Users.Add(user);
             _context.SaveChanges();
@@ -111,12 +121,27 @@ namespace Accountable.Controllers
             };
             _context.UserAccounts.Add(userAccount);
             _context.SaveChanges();
+            if (Register.Photo != null)
+            {
+                var image = Register.Photo;
+                var extension = Path.GetExtension(image.FileName);
+                var guid = Guid.NewGuid().ToString();
+                var path = Path.Combine(_env.ContentRootPath, "images", guid + extension);
+                var webpath = "https://localhost:7126/api/Photos/images/" + guid + extension;
+                ImagesHelper.SaveFormFileImageTo(image, path);
+                if (OperatingSystem.IsWindows())
+                {
+                    string pathTo = Path.Combine(_env.ContentRootPath, "images", guid + "-64" + extension);
+                    ImagesHelper.ResizeImageFromTo(path, pathTo, 64, 64);
+                }
+                user.ProfilePicture = webpath;
+                _context.SaveChanges();
+            }
             var token = JWTHelper.GenerateJWT(user, userAccount, _secret);
             userAccount.AuthorizationToken = token;
             _context.SaveChanges();
             return Ok(new TokenInfo
             {
-
                 AuthenticationToken = token
             });
         }

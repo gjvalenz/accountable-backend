@@ -28,6 +28,8 @@ namespace Accountable.Models
         public DbSet<WeightEntry> WeightEntries { get; set; }
         public DbSet<Friend> Friends { get; set; }
         public DbSet<PostLike> PostLikes { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
     }
 }
