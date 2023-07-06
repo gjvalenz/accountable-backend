@@ -23,7 +23,7 @@ namespace Accountable.Controllers
             if (kind == "Message")
             {
                 // fetch from message db
-                return Encoding.UTF8.GetBytes("sent you a message.");
+                return _context.Messages.Find(id)!.Content!;
             }
             else if (kind == "Like")
             {
@@ -37,7 +37,7 @@ namespace Accountable.Controllers
             {
                 return Encoding.UTF8.GetBytes("sent you a friend request.");
             }
-            else if(kind == "CommentPost") // comment on post
+            else if (kind == "CommentPost") // comment on post
             {
                 // fetch from comment db
                 return _context.Comments.Find(id)!.Content!;
@@ -59,7 +59,18 @@ namespace Accountable.Controllers
             User user = _context.Users.Find(ids.UserID)!;
             var notifications = from notifs in _context.Notifications where notifs.To == user.Id select notifs;
             var notifts = notifications.ToList();
+            HashSet<string> msgs = new HashSet<string>();
             notifts.Sort((a, b) => DateTime.Compare(b.TimeSent, a.TimeSent));
+            notifts.RemoveAll(n =>
+            {
+                if (n.Kind != "Message")
+                    return false;
+                if (msgs.Contains(n.To.ToString() + "+" + n.From.ToString()))
+                    return true;
+                msgs.Add(n.To.ToString() + "+" + n.From.ToString());
+                msgs.Add(n.From.ToString() + "+" + n.To.ToString());
+                return false;
+            });
             return Ok(notifts.Select(n => new NotificationInformation
             {
                 Id = n.Id,

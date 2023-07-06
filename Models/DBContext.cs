@@ -30,6 +30,6 @@ namespace Accountable.Models
         public DbSet<PostLike> PostLikes { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Comment> Comments { get; set; }
-
+        public DbSet<Message> Messages { get; set; }
     }
 }

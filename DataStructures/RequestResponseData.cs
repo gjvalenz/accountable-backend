@@ -137,4 +137,10 @@ namespace Accountable.DataStructures.ResponseRequestData
     {
         public IFormFile? Image { get; set; }
     }
+
+    public class CreateMessage
+    {
+        public string? Content { get; set; }
+        public int ToUserId { get; set; }
+    }
 }

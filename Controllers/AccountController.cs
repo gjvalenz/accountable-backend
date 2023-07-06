@@ -34,19 +34,20 @@ namespace Accountable.Controllers
 
         [Authorize]
         [HttpGet]
-        public ActionResult<UserContext> GetSelf()
+        public ActionResult<Object> GetSelf()
         {
             var ids = JWTHelper.FromUserClaims(User.Claims);
             if (!_context.IsAuthenticated(ids))
                 return Problem("Could not retreived user data.");
             User user = _context.Users.Find(ids.UserID)!;
             UserAccount userAccount = _context.UserAccounts.Find(ids.UserAccountID)!;
-            return Ok(new UserContext
+            return Ok(new
             {
                 Name = user.Name,
                 ProfilePicture = user.ProfilePicture!,
                 Registered = user.Registered,
-                Email = userAccount.Email!
+                Email = userAccount.Email!,
+                Id = user.Id,
             });
         }
 
