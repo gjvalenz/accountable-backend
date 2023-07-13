@@ -85,6 +85,44 @@ namespace Accountable.Controllers
             }));
         }
 
+        // get notifications sent after {notificationId}
+        [Authorize]
+        [HttpGet("subscribeAfter/{notificationId}")]
+        public ActionResult<IEnumerable<Object>> GetAfter(int notificationId)
+        {
+            if (notificationId <= 0)
+                return Problem("Invalid Notification ID.");
+            var ids = JWTHelper.FromUserClaims(User.Claims);
+            if (!_context.IsAuthenticated(ids))
+                return Problem("Could not retreived user data.");
+            Notification latest = _context.Notifications.Find(notificationId)!;
+            HashSet<string> msgs = new HashSet<string>();
+            var notifs = _context.Notifications.Where(n => DateTime.Compare(n.TimeSent, latest.TimeSent) > 0);
+            var ordered = notifs.OrderBy(n => n.TimeSent).ToList();
+            ordered.RemoveAll(n =>
+            {
+                if (n.Kind != "Message")
+                    return false;
+                if (msgs.Contains(n.To.ToString() + "+" + n.From.ToString()))
+                    return true;
+                msgs.Add(n.To.ToString() + "+" + n.From.ToString());
+                msgs.Add(n.From.ToString() + "+" + n.To.ToString());
+                return false;
+            });
+            return Ok(ordered.Select(n => new NotificationInformation
+            {
+                Id = n.Id,
+                Kind = n.Kind,
+                Content = GetContent(n.KeyTo, n.Kind!),
+                KeyTo = n.KeyTo,
+                FromUserId = n.From,
+                FromUsername = _context.Users.Find(n.From)!.Name,
+                FromProfilePicture = _context.Users.Find(n.From)!.ProfilePicture,
+                Read = n.Read,
+                TimeSent = n.TimeSent
+            }));
+        }
+
         [Authorize]
         [HttpGet("readAll")]
         public ActionResult<Object> ReadAll()
