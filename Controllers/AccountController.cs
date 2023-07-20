@@ -138,6 +138,11 @@ namespace Accountable.Controllers
                 user.ProfilePicture = webpath;
                 _context.SaveChanges();
             }
+            else
+            {
+                user.ProfilePicture = 'https://i.ibb.co/VHWWb2s/cropped.jpg';
+                _context.SaveChanges();
+            }
             var token = JWTHelper.GenerateJWT(user, userAccount, _secret);
             userAccount.AuthorizationToken = token;
             _context.SaveChanges();
