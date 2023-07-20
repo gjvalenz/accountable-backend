@@ -140,7 +140,7 @@ namespace Accountable.Controllers
             }
             else
             {
-                user.ProfilePicture = 'https://i.ibb.co/VHWWb2s/cropped.jpg';
+                user.ProfilePicture = "https://i.ibb.co/VHWWb2s/cropped.jpg";
                 _context.SaveChanges();
             }
             var token = JWTHelper.GenerateJWT(user, userAccount, _secret);
