@@ -68,7 +68,6 @@ namespace Accountable.Controllers
                 if (msgs.Contains(n.To.ToString() + "+" + n.From.ToString()))
                     return true;
                 msgs.Add(n.To.ToString() + "+" + n.From.ToString());
-                msgs.Add(n.From.ToString() + "+" + n.To.ToString());
                 return false;
             });
             return Ok(notifts.Select(n => new NotificationInformation
@@ -97,7 +96,7 @@ namespace Accountable.Controllers
                 return Problem("Could not retreived user data.");
             Notification latest = _context.Notifications.Find(notificationId)!;
             HashSet<string> msgs = new HashSet<string>();
-            var notifs = _context.Notifications.Where(n => DateTime.Compare(n.TimeSent, latest.TimeSent) > 0);
+            var notifs = _context.Notifications.Where(n => (DateTime.Compare(n.TimeSent, latest.TimeSent) > 0)  && n.To == ids.UserID);
             var ordered = notifs.OrderBy(n => n.TimeSent).ToList();
             ordered.RemoveAll(n =>
             {

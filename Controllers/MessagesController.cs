@@ -32,9 +32,10 @@ namespace Accountable.Controllers
             if (message.ToUserId != ids.UserID)
                 return Problem("Cannot modify this message");
             message.Read = true;
-            var ourId = ids.UserID;
-            var theirId = message.ToUserId == ourId ? message.UserId : message.ToUserId;
-            _context.Notifications.RemoveRange(_context.Notifications.Where(n => (n.Kind == "Message" && ((n.To == ourId && n.From == theirId)||(n.To == theirId && n.From == ourId)))));
+            //var ourId = ids.UserID;
+            //var theirId = message.ToUserId == ourId ? message.UserId : message.ToUserId;
+            // doing this breaks the notification system!!!
+            //_context.Notifications.RemoveRange(_context.Notifications.Where(n => (n.Kind == "Message" && ((n.To == ourId && n.From == theirId)||(n.To == theirId && n.From == ourId)))));
             _context.SaveChanges();
             return Ok(new { Read = true });
         }
